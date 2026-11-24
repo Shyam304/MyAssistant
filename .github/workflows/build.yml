@@ -16,6 +16,11 @@ jobs:
           gradle-version: '8.10.2'
       - name: Unzip project
         run: unzip -o MyAssistantAndroid_Project.zip -d project
+      - name: Fix Java and Kotlin target
+        working-directory: project/MyAssistantAndroid
+        run: |
+          sed -i 's/defaultConfig {/compileOptions {\n        sourceCompatibility = JavaVersion.VERSION_17\n        targetCompatibility = JavaVersion.VERSION_17\n    }\n    kotlinOptions {\n        jvmTarget = "17"\n    }\n    defaultConfig {/' app/build.gradle.kts
+          cat app/build.gradle.kts
       - name: Build
         working-directory: project/MyAssistantAndroid
         run: gradle --no-daemon assembleDebug
