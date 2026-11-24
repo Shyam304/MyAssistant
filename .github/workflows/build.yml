@@ -20,10 +20,22 @@ jobs:
         working-directory: project/MyAssistantAndroid
         run: |
           sed -i 's/defaultConfig {/compileOptions {\n        sourceCompatibility = JavaVersion.VERSION_17\n        targetCompatibility = JavaVersion.VERSION_17\n    }\n    kotlinOptions {\n        jvmTarget = "17"\n    }\n    defaultConfig {/' app/build.gradle.kts
-          cat app/build.gradle.kts
+      - name: Fix code errors
+        working-directory: project/MyAssistantAndroid
+        run: |
+          F=app/src/main/java/com/example/myassistant/MainActivity.kt
+          sed -i 's/singleLine = true/isSingleLine = true/' $F
+          sed -i 's/catch (_: Exception)/catch (e: Exception)/' $F
       - name: Build
         working-directory: project/MyAssistantAndroid
-        run: gradle --no-daemon assembleDebug
+        run: |
+          set -o pipefail
+          gradle --no-daemon --console=plain assembleDebug 2>&1 | tee build.log
+      - name: Show errors
+        if: failure()
+        working-directory: project/MyAssistantAndroid
+        run: |
+          grep -n "^e: " build.log || true
       - uses: actions/upload-artifact@v4
         with:
           name: MyAssistant-apk
